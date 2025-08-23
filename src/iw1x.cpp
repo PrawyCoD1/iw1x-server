@@ -535,7 +535,7 @@ const char* custom_FS_ReferencedPakNames(void)
     else
         strncpy(fs_game, check, sizeof(fs_game) - 1);
     
-    for(search = fs_searchpaths->next; search; search = search->next) {
+    for(search = fs_searchpaths; search; search = search->next) {
        
             if(!search->pak)
             continue;
@@ -567,7 +567,7 @@ const char* custom_FS_ReferencedPakChecksums(void)
     else
         strncpy(fs_game, check, sizeof(fs_game) - 1);
     
-    for(search = fs_searchpaths->next; search; search = search->next) 
+    for(search = fs_searchpaths; search; search = search->next) 
     {
             if(!search->pak)
                 continue;
@@ -3591,9 +3591,9 @@ class iw1x
         hook_call(0x08089db9, (int)hook_SV_SetConfigstring_SV_SendServerCommand_cs);
 	    hook_call(0x0808A877, (int)SV_PatchReferencedPakSums);
 	    hook_call(0x0808A88C, (int)SV_PatchReferencedPakNames);
-
-        hook_jmp(0x080717a4, (int)custom_FS_ReferencedPakChecksums);
-        hook_jmp(0x080716cc, (int)custom_FS_ReferencedPakNames);
+		hook_call(0x808A867, (int)custom_FS_ReferencedPakChecksums);
+        hook_call(0x808A87C, (int)custom_FS_ReferencedPakNames);
+		
         hook_jmp(0x080872ec, (int)custom_SV_ExecuteClientMessage);
         hook_jmp(0x08086d58, (int)custom_SV_ExecuteClientCommand);
         hook_jmp(0x0809045c, (int)custom_SV_SendClientMessages);
