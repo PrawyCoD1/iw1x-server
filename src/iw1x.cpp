@@ -301,17 +301,31 @@ qboolean FS_svrPak(const char *base)
 bool shouldServeFile(const char *requestedFilePath)
 {
     static char localFilePath[MAX_OSPATH*2+5];
+    static char localFileName[MAX_OSPATH*2+5];
+    static char normalizedRequestedFilePath[MAX_OSPATH*2+5];
     searchpath_t* search;
 
+    if (!requestedFilePath || !*requestedFilePath)
+        return false;
+
+    Q_strncpyz(normalizedRequestedFilePath, requestedFilePath, sizeof(normalizedRequestedFilePath));
+    for (size_t i = 0; normalizedRequestedFilePath[i] != '\0'; i++)
+    {
+        if (normalizedRequestedFilePath[i] == '\\')
+            normalizedRequestedFilePath[i] = '/';
+    }
+
     localFilePath[0] = 0;
+    localFileName[0] = 0;
 
     for (search = fs_searchpaths; search; search = search->next)
     {
         if (search->pak)
         {
             snprintf(localFilePath, sizeof(localFilePath), "%s/%s.pk3", search->pak->pakGamename, search->pak->pakBasename);
-            if(!strcmp(localFilePath, requestedFilePath))
-                if(!FS_svrPak(search->pak->pakBasename))
+            snprintf(localFileName, sizeof(localFileName), "%s.pk3", search->pak->pakBasename);
+            if (!Q_stricmp(localFilePath, normalizedRequestedFilePath) || !Q_stricmp(localFileName, normalizedRequestedFilePath))
+                if (!FS_svrPak(search->pak->pakBasename))
                     return true;
         }
     }
@@ -1459,7 +1473,7 @@ void custom_SV_SendClientGameState(client_t *client)
                 }
                 else
                 {
-                    if (sv_downloadForce->integer)
+                    if (sv_downloadForce->integer || (x_patchclient->integer && !clientUsing1_1x))
                     {
                         csCopy.append("\\cl_allowDownload\\1");
                     }
